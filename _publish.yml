@@ -1,0 +1,4 @@
+- source: talk_useR-20240709.qmd
+  quarto-pub:
+    - id: af8bcba2-07d4-4b91-aced-5b29a58c1114
+      url: 'https://cynthiahuang.quarto.pub/user2024'
