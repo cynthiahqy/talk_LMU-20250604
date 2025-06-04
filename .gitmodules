@@ -1,3 +1,6 @@
 [submodule "images"]
 	path = images
 	url = https://github.com/cynthiahqy/collection_crossmap-images.git
+[submodule "example_narrow-occpns"]
+	path = example_narrow-occpns
+	url = https://github.com/cynthiahqy/example_narrow-occpns

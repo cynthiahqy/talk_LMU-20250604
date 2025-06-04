@@ -37,51 +37,42 @@ filters:
 
 ## Who am I?
 
-::: fragment
-- 👩‍🎓 Research Fellow in EBS supervised by [_Prof. Rob Hyndman_](https://robjhyndman.com)
+:::: {.columns}
+
+::: {.column width="50%"}
+- 👩‍🎓 Research Fellow supervised by [_Prof. Rob J Hyndman_](https://robjhyndman.com)
+- 🔪 Data preparation methods, tools & workflows
 - 🎙️ Regular host on [The Random Sample](https://www.therandomsample.com.au/podcasts/) podcast
+  - recently interviewed Hadley Wickham about tool design!
 :::
+
+::: {.column width="50%"}
+
+![](other_images/about-me-thesis-sketch.png)
+
+:::
+
+::::
+
+
+<!-- :::
 ::: fragment
 - 💱 Previously:
   - Economics at the University of Melbourne
   - Data preparation for empirical social science:
       - wikipedia entries, archival magazines, trade databases, satellite images, online retail prices...
-::: 
+:::  -->
 
-## What do I work on?
-
-::: incremental
-- 👩‍🎓 Thesis: **Unified Statistical Principles and Computational Tools for Data Harmonisation and Provenance**, supervised by:
-  - [_Prof. Rob Hyndman_ (EBS, MBUS)](https://robjhyndman.com), [_Prof. Simon Angus_ (Econ, MBUS)](https://research.monash.edu/en/persons/simon-angus), and [_Dr. Sarah Goodwin_ (HCC, FIT)](https://research.monash.edu/en/persons/sarah-goodwin) 
-:::
-::: incremental
-- 📊 Research Interests
-  - 🌰 Designing tools and workflows for wild caught data!
-:::
-
-## Overview of 'xmap'
+## About 'xmap'
 
 ::: {.columns .v-center-container}
-::: {.column width="33.33%"}
+::: {.column width="40%"}
 
-[Motivation]{.overview-text}
-![](images/illustrations/icon-official-stats.png){fig-align="center" height=300px}
-
-[Official Statistics+]{.fragment .overview-text}
+![](other_images/problem-motivation.png)
 :::
 
-::: {.column width="33.33%"}
-[Conceptual Solution]{.overview-text}
-![](images/illustrations/icon-database.png){fig-align="center" height=300px}
-
-[Crossmaps Framework]{.fragment .overview-text}
-:::
-
-::: {.column width="33.33%"}
-[Implementation]{.overview-text}
-![](images/illustrations/xmap-hex-sticker.png){fig-align="center" height=300px}
-
-[`xmap` Toolkit and Workflows]{.fragment .overview-text}
+::: {.column width="60%"}
+![](other_images/current-state.png)
 ::: 
 
 :::
@@ -101,11 +92,10 @@ Combining **semantically related** data collected under **distinct survey instru
 
 ![](images/illustrations/diagram_current-workflow.png){fig-align="center"}
 
-## Current Workflow
+## Current Workflow - Example 1
 
 ``` {.stata include="includes/schott_algorithm_28.do" filename="schott_algorithm_28.do [800+ lines]"}
 ```
-
 
 # Conceptual Solution
 
@@ -117,7 +107,7 @@ Crossmaps Framework
 
 ![](images/illustrations/diagram_framework-workflow.png){fig-align="center"}
 
-## Crossmaps Framework
+## Graph-based data transformation
 
 ![](images/illustrations/diagram_crossmap-transform-latex.png){fig-align="center"}
 
@@ -125,21 +115,9 @@ Crossmaps Framework
 For details see preprint: [A Unified Statistical And Computational Framework For Ex-Post Harmonisation Of Aggregate Statistics <arxiv.org/abs/2406.14163>](https://arxiv.org/abs/2406.14163)
 :::
 
-## Unified and Principled Workflows
-
-::: {.columns}
-::: {.column width=30%}
-![](images/screenshots/asc-poster.png){fig-align="center"}
-:::
-::: {.column width=70%}
+## Workflow & tool implications
 
 ![](images/screenshots/asc-poster-basic-implications.png){fig-align="center"}
-:::
-:::
-
-::: smaller
-For details see poster on [cynthiahqy.com](https://cynthiahqy.com/)
-:::
 
 <!-- {background-image="https://raw.githubusercontent.com/cynthiahqy/collection_crossmap-images/main/illustrations/xmap-hex-sticker.png" background-position="top right 10px" background-size="30%" background-repeat="no-repeat"} -->
 
@@ -147,13 +125,12 @@ For details see poster on [cynthiahqy.com](https://cynthiahqy.com/)
 
 Data Structures and Functions for using the Crossmaps Approach
 
-## Software Overview
+## Current functionality & design
 
 ::: {.columns}
 ::: {.column}
-**Core Features**
 
-Specify and Validate Mappings
+Specify and Validate Crossmaps
 
 - `{dplyr}` verbs
 - `as_xmap_tbl()`
@@ -161,14 +138,17 @@ Specify and Validate Mappings
 
 <!-- ![](images/illustrations/plot_aus-split.png) -->
 
-Match and Apply Transformations
+Apply Transformations to Data
 
 - `apply_xmap()`
 - `diagnose_apply_xmap()`
 
 :::
 ::: {.column .fragment}
-**Auxillary Features [WIP]**
+
+![](images/illustrations/plot_aus-split.png){height=600px}
+
+<!-- **Auxillary Features [WIP]**
 
 - extract logic from existing scripts
 - graph and matrix classes
@@ -176,9 +156,180 @@ Match and Apply Transformations
 - manage collections of crossmaps
 - analysis of crossmap properties
 - visualise and edit crossmap graphs
-- ...
+- ... -->
 :::
 :::
+
+## Example - Splitting country level data by population share
+
+```{r}
+library(dplyr)
+(split_xmap_pop <- xmap::demo$aus_state_pop_df |>
+  group_by(ctry) |>
+  mutate(pop_share = pop / sum(pop)) |>
+  ungroup() |>
+  xmap::as_xmap_tbl(
+    from = ctry, to = state, weight_by = pop_share
+  ))
+```
+
+## Data Transformation 'Guardrails'
+
+Transformation logic (i.e. mappings) formatted as crossmaps can be easily validated:
+
+::: {.columns}
+::: {.column}
+
+`diagnose_as_xmap_tbl()`:
+
+::: {.incremental}
+- weights from a given `.from` key sum to one, to preserve total mass before and after
+- no missing values in the links
+- no duplicated links
+:::
+
+:::
+::: {.column}
+
+`diagnose_apply_xmap()`:
+
+::: {.incremental}
+  - all key-value pairs in `.data` have matching instructions in `.xmap`
+  - no missing values in `.data`
+:::
+
+:::
+:::
+
+# Current Status
+
+## Usability & usage scenarios
+
+::: {.columns}
+::: {.column width=60%}
+![](other_images/current-state.png)
+:::
+::: {.column width=40%}
+
+::: {.incremental}
+- 🆗 Ex-Post Harmonisation Methods Research
+- 🤔 Broader adoption into **Data Harmonisation Workflows**
+    - complexity, scale
+    - interpretability of crossmaps
+    - **🔀 Translating existing scripts**
+  <!-- - 'missing data' imputation
+  - sensitivity analyses -->
+    <!-- - ⌨️ Encoding transformations as crossmaps
+    - 🔎 Data provenance statements & visualisations
+    - **🔀 Translating existing scripts into crossmaps** -->
+:::
+
+:::
+:::
+
+# Translating existing scripts
+
+## Source: Stata Script for Aggregating Occupation Codes
+
+``` stata
+/*use "C:\Users\binder\Dropbox\brett folders\Census 2015\Unit Record Data files\merged data.dta", clear*/
+/* merged data occupation*/
+/* professional, manager, teacher, assprofclerk, svcsales, armforces, 
+xefe, farmer, craftrademach, labourer, driver, notclass */
+
+gen farmer=0
+replace farmer=1 if occupn>6000 & occupn<7000
+gen teacher=0
+replace teacher=1 if occupn>2400 & occupn<2500
+gen professional=0
+replace professional=1 if occupn>2000 & occupn<3000 & teacher==0
+gen manager=0
+replace manager=1 if occupn>1000 & occupn<1129
+replace manager=1 if occupn>1131 & occupn<2000
+gen armforces=0
+replace armforces=1 if occupn<200 
+gen xefe=0
+replace xefe=1 if occupn==1130
+gen assprofclerk=0
+replace assprofclerk=1 if occupn>3000 & occupn<5000
+gen svcsales=0
+replace svcsales=1 if occupn>5000 & occupn<6000
+replace svcsales=1 if occupn>9000 & occupn<9200
+gen labourer=0
+replace labourer=1 if occupn>9200 & occupn<9320
+gen driver=0
+replace driver=1 if occupn>8320 & occupn<8330
+replace driver=1 if occupn>9330 & occupn<9340
+gen craftrademach=0
+replace craftrademach=1 if occupn>7000 & occupn<9000 & driver==0
+gen notclass=0
+replace notclass=1 if occupn>9990 & occupn<10000
+
+sum professional manager teacher assprofclerk svcsales armforces xefe farmer craftrademach labourer driver notclass if p3p30_school_level==6
+```
+
+## Extract & Validate Transformation
+
+```{r}
+library(readr)
+links <- readr::read_csv(file.path("example_narrow-occpns", "output", "dta_links.csv"),
+    col_types = cols(
+        from = col_character(),
+        to = col_character(),
+        weights = col_double()
+    )
+)
+```
+
+:::: {.columns}
+
+::: {.column}
+
+```{r}
+#| echo: true
+#| message: true
+links
+```
+:::
+
+::: {.column}
+```{r}
+#| echo: true
+#| message: true
+xmap::diagnose_as_xmap_tbl(links, from, to, weights)
+```
+:::
+
+::::
+
+
+
+
+## Summarise Transformation
+```{r}
+summary_tbl <- readr::read_csv(
+  file.path("example_narrow-occpns", "output", "paper_example.csv"),
+  col_types = cols(
+  to = col_character(),
+  n_from = col_double(),
+  n_unique = col_skip(),
+  parts_from3 = col_skip(),
+  parts_from = col_character()
+))
+```
+
+::: {.smaller}
+
+```{r}
+knitr::kable(summary_tbl)
+```
+
+:::
+
+## Alternative ways of interpreting mappings?
+
+
+# Appendix: xmap walk-through
 
 ## Example: Occupation Code Mappings
 
@@ -323,35 +474,7 @@ occp_stats |>
 :::
 :::
 
-## Verifying Crossmaps and Transformations
-
-Helper functions for keeping inside crossmap guardrails:
-
-::: {.columns}
-::: {.column}
-
-`diagnose_as_xmap_tbl()`:
-
-::: {.incremental}
-- weights from a given `.from` key sum to one, to preserve total mass before and after
-- no missing values in the links
-- no duplicated links
-:::
-
-:::
-::: {.column}
-
-`diagnose_apply_xmap()`:
-
-::: {.incremental}
-  - all key-value pairs in `.data` have matching instructions in `.xmap`
-  - no missing values in `.data`
-:::
-
-:::
-:::
-
-## Future Development
+## Future Development {visibility="hidden"}
 
 ::: {.columns}
 ::: {.column width=70%}
