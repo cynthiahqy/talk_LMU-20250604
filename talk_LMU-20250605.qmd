@@ -1,0 +1,406 @@
+---
+title: "Improving ex-post data harmonisation with `xmap`"
+subtitle: "Making Data Work: Tools for Better Statistical Practice"
+author:
+  - name: Cynthia A. Huang
+    orcid: 0000-0002-9218-987X
+    email: cynthia.huang@monash.edu
+    affiliation:
+      - Department of Econometrics and Business Statistics
+format:
+  presentation-revealjs+letterbox:
+    css: "style/custom.css"
+filters:
+  - include-code-files
+---
+
+## Setup {visibility="hidden"}
+```{r setup}
+#| echo: false
+# remotes::install_github("cynthiahqy/xmap#1")
+```
+
+::: notes
+- Motivation / current issues:
+  - long scripts
+  - Example use cases: occupations, gdp etc. for AUS-STATE
+- Introduce framework for thinking about one-to-many / many-to-one **data** transformations:
+  - overall idea
+  - direct to paper
+  - implications for workflow
+    - validate these conditions
+    - use my package to do this
+- Walk through examples in package
+:::
+
+# About Me!
+
+## Who am I?
+
+::: fragment
+- 👩‍🎓 Research Fellow in EBS supervised by [_Prof. Rob Hyndman_](https://robjhyndman.com)
+- 🎙️ Regular host on [The Random Sample](https://www.therandomsample.com.au/podcasts/) podcast
+:::
+::: fragment
+- 💱 Previously:
+  - Economics at the University of Melbourne
+  - Data preparation for empirical social science:
+      - wikipedia entries, archival magazines, trade databases, satellite images, online retail prices...
+::: 
+
+## What do I work on?
+
+::: incremental
+- 👩‍🎓 Thesis: **Unified Statistical Principles and Computational Tools for Data Harmonisation and Provenance**, supervised by:
+  - [_Prof. Rob Hyndman_ (EBS, MBUS)](https://robjhyndman.com), [_Prof. Simon Angus_ (Econ, MBUS)](https://research.monash.edu/en/persons/simon-angus), and [_Dr. Sarah Goodwin_ (HCC, FIT)](https://research.monash.edu/en/persons/sarah-goodwin) 
+:::
+::: incremental
+- 📊 Research Interests
+  - 🌰 Designing tools and workflows for wild caught data!
+:::
+
+## Overview of 'xmap'
+
+::: {.columns .v-center-container}
+::: {.column width="33.33%"}
+
+[Motivation]{.overview-text}
+![](images/illustrations/icon-official-stats.png){fig-align="center" height=300px}
+
+[Official Statistics+]{.fragment .overview-text}
+:::
+
+::: {.column width="33.33%"}
+[Conceptual Solution]{.overview-text}
+![](images/illustrations/icon-database.png){fig-align="center" height=300px}
+
+[Crossmaps Framework]{.fragment .overview-text}
+:::
+
+::: {.column width="33.33%"}
+[Implementation]{.overview-text}
+![](images/illustrations/xmap-hex-sticker.png){fig-align="center" height=300px}
+
+[`xmap` Toolkit and Workflows]{.fragment .overview-text}
+::: 
+
+:::
+
+# Motivation
+Ex-Post Harmonisation of Survey Statistics
+
+## Harmonisation of Aggregate Statistics
+
+Combining **semantically related** data collected under **distinct survey instruments** into a single analysis dataset.
+
+. . .
+
+![](images/illustrations/diagram_ex-post-process.png){height=500px fig-align="center"}
+
+## Current Workflow
+
+![](images/illustrations/diagram_current-workflow.png){fig-align="center"}
+
+## Current Workflow
+
+``` {.stata include="includes/schott_algorithm_28.do" filename="schott_algorithm_28.do [800+ lines]"}
+```
+
+
+# Conceptual Solution
+
+Crossmaps Framework
+
+<!-- pull from numbats talk -->
+
+## Proposed Solution
+
+![](images/illustrations/diagram_framework-workflow.png){fig-align="center"}
+
+## Crossmaps Framework
+
+![](images/illustrations/diagram_crossmap-transform-latex.png){fig-align="center"}
+
+::: smaller
+For details see preprint: [A Unified Statistical And Computational Framework For Ex-Post Harmonisation Of Aggregate Statistics <arxiv.org/abs/2406.14163>](https://arxiv.org/abs/2406.14163)
+:::
+
+## Unified and Principled Workflows
+
+::: {.columns}
+::: {.column width=30%}
+![](images/screenshots/asc-poster.png){fig-align="center"}
+:::
+::: {.column width=70%}
+
+![](images/screenshots/asc-poster-basic-implications.png){fig-align="center"}
+:::
+:::
+
+::: smaller
+For details see poster on [cynthiahqy.com](https://cynthiahqy.com/)
+:::
+
+<!-- {background-image="https://raw.githubusercontent.com/cynthiahqy/collection_crossmap-images/main/illustrations/xmap-hex-sticker.png" background-position="top right 10px" background-size="30%" background-repeat="no-repeat"} -->
+
+# Implementation in R
+
+Data Structures and Functions for using the Crossmaps Approach
+
+## Software Overview
+
+::: {.columns}
+::: {.column}
+**Core Features**
+
+Specify and Validate Mappings
+
+- `{dplyr}` verbs
+- `as_xmap_tbl()`
+- `diagnose_as_xmap_tbl()`
+
+<!-- ![](images/illustrations/plot_aus-split.png) -->
+
+Match and Apply Transformations
+
+- `apply_xmap()`
+- `diagnose_apply_xmap()`
+
+:::
+::: {.column .fragment}
+**Auxillary Features [WIP]**
+
+- extract logic from existing scripts
+- graph and matrix classes
+- symbolic fractional weights
+- manage collections of crossmaps
+- analysis of crossmap properties
+- visualise and edit crossmap graphs
+- ...
+:::
+:::
+
+## Example: Occupation Code Mappings
+
+```{r}
+#| label: set-up-anzsco
+#| echo: false
+#| message: false
+#| file: includes/anzsco-example.R
+```
+
+::: {.columns}
+::: {.column}
+ANZSCO22 to ISCO8
+
+![](images/plots/plot-anzsco-isco-bigraph-with-table.png){height=550px}
+:::
+::: {.column}
+Stylised Occupation Level Counts
+
+::: smaller
+```{r}
+## stylised occupation counts 
+## from total of 2000 observed individuals
+xmap::demo$anzsco22_stats |> 
+  kableExtra::kable()
+```
+
+Hypothetically aggregated from **2000** individual responses
+:::
+
+:::
+::: 
+
+## Creating a Valid Crossmap
+
+Start with *crosswalk*, or *lookup table*:
+
+```{r}
+xmap::demo$anzsco22_isco8_crosswalk
+```
+
+## Creating a Valid Crossmap
+
+Add some naive (equal) distribution weights:
+
+```{r}
+#| echo: true
+#| output-location: column-fragment
+library(dplyr)
+library(xmap)
+
+crosswalk <- 
+  xmap::demo$anzsco22_isco8_crosswalk |>
+  select(anzsco22, isco8)
+
+(
+links <- crosswalk |>
+  group_by(anzsco22) |>
+  mutate(equal = 1 / n_distinct(isco8)) |>
+  ungroup()
+)
+```
+
+## Creating a Valid Crossmap
+
+... and coerce to a crossmap:
+
+```{r}
+#| echo: true
+#| output-location: column-fragment
+(
+occp_xmap <- links |>
+  xmap::as_xmap_tbl(
+    from = anzsco22,
+    to = isco8,
+    weight_by = equal
+  )
+)
+```
+
+## ! ERROR: Invalid Weights
+
+What if we try to naively use unit weights?
+
+::: {.columns}
+::: {.column}
+```{r}
+#| error: true
+#| echo: true
+#| output-location: fragment
+crosswalk |>
+  mutate(ones = 1) |>
+  xmap::as_xmap_tbl(
+    from = anzsco22,
+    to = isco8,
+    weight_by = ones
+  )
+```
+:::
+::: {.column .fragment}
+```{r}
+#| echo: true
+crosswalk |>
+  mutate(ones = 1) |>
+  xmap::diagnose_as_xmap_tbl(
+    anzsco22, isco8,
+    weight_by = ones
+  )
+```
+:::
+:::
+
+## Applying a Valid Crossmap to Conformable Data
+
+::: {.columns}
+::: {.column}
+
+Stylised counts from before...
+
+```{r}
+#| echo: true
+(occp_stats <- 
+  xmap::demo$anzsco22_stats |>
+  mutate(ref = 100)
+)
+```
+:::
+::: {.column .fragment}
+Transformed, with redistribution and aggregation:
+
+```{r}
+#| echo: true
+#| error: true
+#| output-location: fragment
+occp_stats |>
+  xmap::apply_xmap(
+    .xmap = occp_xmap,
+    values_from = c(count, ref),
+    keys_from = anzsco22
+  )
+```
+:::
+:::
+
+## Verifying Crossmaps and Transformations
+
+Helper functions for keeping inside crossmap guardrails:
+
+::: {.columns}
+::: {.column}
+
+`diagnose_as_xmap_tbl()`:
+
+::: {.incremental}
+- weights from a given `.from` key sum to one, to preserve total mass before and after
+- no missing values in the links
+- no duplicated links
+:::
+
+:::
+::: {.column}
+
+`diagnose_apply_xmap()`:
+
+::: {.incremental}
+  - all key-value pairs in `.data` have matching instructions in `.xmap`
+  - no missing values in `.data`
+:::
+
+:::
+:::
+
+## Future Development
+
+::: {.columns}
+::: {.column width=70%}
+
+- *data provenance documentation*
+    - multi-partite graph visualisation
+    - summary of crossmap properties
+- *extracting mapping logic from existing scripts*
+    - manipulate data input
+    - parse AST into computational graph
+- *advanced workflows and interactive interfaces*
+    - interactive editing of mapping
+    - multiple transformations
+
+:::
+::: {.column width=30%}
+![](images/plots/plot-isiccomb-split-by-income-groups.png)
+
+![](images/screenshots/screenshot_visxprov-ctry-proposed.png)
+:::
+:::
+
+## Thanks for listening! {visibility="hidden"}
+
+:::: columns
+::: {.column width=70%}
+::: {.smaller}
+
+Try the package: 
+
+* Install from GitHub: [cynthiahqy/xmap](https://github.com/cynthiahqy/xmap)
+* ...soon to be on CRAN
+
+
+Ask me about related work and applications:
+
+- 🇦🇹 **_UseR!, Salzburg (Jul 8-11)_**
+- 🇺🇸 JSM, Portland (Aug 3-9)
+- 🇺🇸 posit::conf(2024), Seattle (Aug 12-14)
+- 🇨🇦 UBC, Vancouver, (Jul-Nov)
+- 🇦🇺 Monash University, Melbourne (Nov onwards)
+
+Or online: `@cynthiahqy` & [`cynthiahqy.com`](https://www.cynthiahqy.com)
+:::
+:::
+
+::: {.column width=30%}
+<!-- ![](includes/headshot-cynthia.jpg){style="border-radius:50%" height="400px"} -->
+
+![](images/illustrations/xmap-hex-sticker.png)
+:::
+::::
