@@ -320,20 +320,34 @@ summary_tbl <- readr::read_csv(
 ```{r}
 knitr::kable(summary_tbl)
 ```
-
 :::
 
-## How best to extract/generate mappings?
 
-- Ask an LLM directly to translate STATA script?
-- Pass 'carbon copy' data through the STATA script?
-- Tell the LLM what mappings you want, and get a crossmap back?
 
+## Your Turn: Motivating Examples
+
+::: {.columns}
+::: {.column}
 Choose your own adventure:
 
 - [🔗 Example STATA script repo](https://github.com/cynthiahqy/example_narrow-occpns)
   - 03a, 03b can be run without STATA
 - [📦 Splitting country-level aggregates - xmap vignette](https://cynthiahqy.github.io/xmap/articles/xmap.html)
+- Appendix of these slides
+:::
+::: {.column}
+Looking for feedback/suggestions:
+
+- Extract/generate mappings
+  - Ask an LLM directly to translate STATA script?
+  - Pass 'carbon copy' data through the STATA script?
+  - Ask an LLM for a crossmap based on mapping logic?
+- Other comments and ideas
+:::
+:::
+
+
+
 
 # Appendix: xmap walk-through
 
