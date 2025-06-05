@@ -302,9 +302,6 @@ xmap::diagnose_as_xmap_tbl(links, from, to, weights)
 
 ::::
 
-
-
-
 ## Summarise Transformation
 ```{r}
 summary_tbl <- readr::read_csv(
@@ -326,8 +323,17 @@ knitr::kable(summary_tbl)
 
 :::
 
-## Alternative ways of interpreting mappings?
+## How best to extract/generate mappings?
 
+- Ask an LLM directly to translate STATA script?
+- Pass 'carbon copy' data through the STATA script?
+- Tell the LLM what mappings you want, and get a crossmap back?
+
+Choose your own adventure:
+
+- [🔗 Example STATA script repo](https://github.com/cynthiahqy/example_narrow-occpns)
+  - 03a, 03b can be run without STATA
+- [📦 Splitting country-level aggregates - xmap vignette](https://cynthiahqy.github.io/xmap/articles/xmap.html)
 
 # Appendix: xmap walk-through
 
